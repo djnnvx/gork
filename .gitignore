@@ -21,4 +21,5 @@ gork
 
 # Go workspace file
 go.work
+gork.txt
 

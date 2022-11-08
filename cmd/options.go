@@ -5,10 +5,6 @@ type Options struct {
     proxy           string
     userAgent       string
 
-    /* HTTPS settings */
-    useHTTPS        bool
-    skipTLScheck    bool
-
     /* Out settings */
     outfile         string
 

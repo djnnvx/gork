@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/rocketlaunchr/google-search"
 )
@@ -16,10 +17,20 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
     }
 
     ctx := context.Background()
-    var results map[string][]googlesearch.Result
+    var results map[string][]googlesearch.Result = make(map[string][]googlesearch.Result)
 
     for ext := range opts.extensions {
         extension := opts.extensions[ext]
+
+        /*
+            hacky solution in order to avoid getting rate limited
+
+            TODO:
+            have all the extensions in only one request, and then filter
+            by filetype the request results
+
+        */
+        time.Sleep(1)
 
         wg.Add(1)
         go func() {
@@ -29,7 +40,7 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
             r, err := googlesearch.Search(ctx, term, searchOpts)
 
             if (err != nil) {
-                fmt.Printf("[!] Could not perform dork on %s: %s", term, err.Error())
+                fmt.Printf("[!] could not perform dork %s: %s", term, err.Error())
                 return
             }
 
@@ -38,6 +49,5 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
     }
 
     wg.Wait()
-
     return results
 }
