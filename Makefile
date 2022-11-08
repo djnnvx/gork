@@ -14,5 +14,9 @@ compile: ## compile the project
 	@go build -o $(TARGET) $(SRC)
 	.
 .PHONY: clean
-clean: ## Cleans up the project
-	rm -f $(TARGET)
+clean: ## clean up the project directory
+	@rm -f $(TARGET)
+
+.PHONY: docker
+docker: ## build a local docker image
+	@docker build --network host . -t gork:latest

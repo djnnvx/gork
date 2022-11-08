@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/rocketlaunchr/google-search"
 )
@@ -23,14 +22,11 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
         extension := opts.extensions[ext]
 
         /*
-            hacky solution in order to avoid getting rate limited
-
             TODO:
             have all the extensions in only one request, and then filter
             by filetype the request results
 
         */
-        time.Sleep(1)
 
         wg.Add(1)
         go func() {

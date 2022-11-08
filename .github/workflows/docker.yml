@@ -1,0 +1,57 @@
+name: Build and push docker image
+
+on:
+  push:
+    branches:
+      - "canon"
+      - "dev"
+    workflow_dispatch:
+
+  pull_request:
+    branches:
+      - "canon"
+      - "dev"
+    workflow_dispatch:
+
+env:
+  APP_VERSION: 0.0.1
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: build container to check if it builds
+        run: make build
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.LOGIN_DOCKERHUB }}
+          password: ${{ secrets.PASSWORD_DOCKERHUB }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: bogdzn/gork
+
+      - name: Build and push canon Docker image
+        if: github.ref == 'refs/heads/canon' && github.event_name != 'pull_request'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: bogdzn/gork:canon, bogdzn/gork:${{ env.APP_VERSION }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Build and push dev docker image
+        if: github.ref == 'refs/heads/dev' && github.event_name != 'pull_request'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: bogdzn/gork:${{ env.APP_VERSION }}-dev, bogdzn/gork:dev
+          labels: ${{ steps.meta.outputs.labels }}
