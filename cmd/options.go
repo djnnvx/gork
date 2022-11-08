@@ -10,6 +10,10 @@ type Options struct {
     skipTLScheck    bool
 
     /* Out settings */
-    outdir          string
+    outfile         string
+
+    /* Target settings */
+    target          string
+    extensions      []string
 }
 
