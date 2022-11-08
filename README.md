@@ -17,10 +17,14 @@ git clone git@git.github.com/bogdzn/gork.git
 
 cd gork
 
-make build
+make
 
 # or, with Docker
 make docker
+
+
+# if you wish to show the current available recipes
+make help
 ```
 
 With docker:
@@ -38,6 +42,7 @@ Usage:
   gork [flags]
 
 Flags:
+  -a, --append-results           append dork results to out file
   -e, --extensions stringArray   filetype extensions (default [doc,docx,csv,pdf,txt,log,bak,json,xlsx])
   -h, --help                     help for gork
   -o, --outfile string           directory storing dorks results (default "./gork.txt")

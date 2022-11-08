@@ -7,6 +7,7 @@ type Options struct {
 
     /* Out settings */
     outfile         string
+    appendResults   bool
 
     /* Target settings */
     target          string
