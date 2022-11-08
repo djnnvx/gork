@@ -1,5 +1,12 @@
 package main
 
+import (
+    cmd "github.com/bogdzn/gork/cmd"
+)
+
 func main() {
-    println("Hello world!")
+    opts := &cmd.Options{}
+    parser := cmd.GetCmdParser(opts)
+
+    parser.ExecuteC()
 }

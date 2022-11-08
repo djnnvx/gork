@@ -8,9 +8,8 @@ type Options struct {
     /* HTTPS settings */
     useHTTPS        bool
     skipTLScheck    bool
+
+    /* Out settings */
+    outdir          string
 }
 
-func ParseOptions() *Options {
-    opts := &Options{}
-
-}
