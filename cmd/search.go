@@ -11,15 +11,15 @@ import (
 func RunSearch(opts *Options) map[string][]googlesearch.Result {
     var wg sync.WaitGroup
     searchOpts := googlesearch.SearchOptions{
-        UserAgent: opts.userAgent,
-        ProxyAddr: opts.proxy,
+        UserAgent: opts.UserAgent,
+        ProxyAddr: opts.Proxy,
     }
 
     ctx := context.Background()
     var results map[string][]googlesearch.Result = make(map[string][]googlesearch.Result)
 
-    for ext := range opts.extensions {
-        extension := opts.extensions[ext]
+    for ext := range opts.Extensions {
+        extension := opts.Extensions[ext]
 
         /*
             TODO:
@@ -32,7 +32,7 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
         go func() {
             defer wg.Done()
 
-            term := fmt.Sprintf("site:%s ext:%s", opts.target, extension)
+            term := fmt.Sprintf("site:%s ext:%s", opts.Target, extension)
             r, err := googlesearch.Search(ctx, term, searchOpts)
 
             if (err != nil) {
