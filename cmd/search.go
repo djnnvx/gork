@@ -8,6 +8,47 @@ import (
 	"github.com/rocketlaunchr/google-search"
 )
 
+
+func runDirListing(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+
+    ctx := context.Background()
+
+    term := fmt.Sprintf("site:%s intitle:index.of", target)
+    results, err := googlesearch.Search(ctx, term, searchOpts)
+    if err != nil {
+        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
+        return []googlesearch.Result{}
+    }
+
+    return results
+}
+
+func runSetupFiles(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+    ctx := context.Background()
+
+    term := fmt.Sprintf("site:%s inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config", target)
+    results, err := googlesearch.Search(ctx, term, searchOpts)
+    if err != nil {
+        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
+        return []googlesearch.Result{}
+    }
+
+    return results
+}
+
+func runOpenRedirects(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+    ctx := context.Background()
+
+    term := fmt.Sprintf("site:%s  inurl:redir | inurl:url | inurl:redirect | inurl:return | inurl:src=http | inurl:r=http", target)
+    results, err := googlesearch.Search(ctx, term, searchOpts)
+    if err != nil {
+        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
+        return []googlesearch.Result{}
+    }
+
+    return results
+}
+
 func RunSearch(opts *Options) map[string][]googlesearch.Result {
     var wg sync.WaitGroup
     searchOpts := googlesearch.SearchOptions{
@@ -43,7 +84,11 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
             results[extension] = r
         }()
     }
-
     wg.Wait()
+
+    results["dir listing"] = runDirListing(opts.Target, searchOpts)
+    results["project setup files"] = runSetupFiles(opts.Target, searchOpts)
+    results["open redirects"] = runOpenRedirects(opts.Target, searchOpts)
+
     return results
 }
