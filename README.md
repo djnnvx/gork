@@ -33,6 +33,15 @@ With docker:
 docker pull bogdzn/gork:canon
 ```
 
+## available dorks
+
+- database files
+- documents (docx, pdf, pptx, etc...)
+- project files (xml, ini, license, install, etc...)
+- directory listing
+- backup files
+- config files
+
 ## usage
 
 ```bash
@@ -54,7 +63,7 @@ Flags:
 
 > If you're using docker, don't forget to mount your current directory with `/app` in the container to access your outfile
 
-## example usage
+## example
 
 ```bash
 > ./gork -t nmap.org
