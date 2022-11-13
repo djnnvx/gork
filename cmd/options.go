@@ -2,15 +2,15 @@ package gork
 
 type Options struct {
     /* HTTP client settings */
-    proxy           string
-    userAgent       string
+    Proxy           string
+    UserAgent       string
 
     /* Out settings */
-    outfile         string
-    appendResults   bool
+    Outfile         string
+    AppendResults   bool
 
     /* Target settings */
-    target          string
-    extensions      []string
+    Target          string
+    Extensions      []string
 }
 
