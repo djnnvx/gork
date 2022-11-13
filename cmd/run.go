@@ -27,6 +27,10 @@ func Run(opts *Options) {
 
     fs.WriteString("\t-== GORK RESULTS FOR " + opts.Target + " ==-\n\n")
     for extensions, results := range dorks {
+        if len(results) == 0 {
+            continue
+        }
+
         fs.WriteString("\t--==== " + extensions + " ===-\n")
         for idx := range results {
             fs.WriteString(results[idx].URL + " " + results[idx].Title + "\n")
