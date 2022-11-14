@@ -1,24 +1,14 @@
 package gork
 
 import (
-	"context"
 	"fmt"
     "strings"
+    "context"
+
+    "golang.org/x/time/rate"
 
 	"github.com/rocketlaunchr/google-search"
 )
-
-/*
-    TODO:
-
-    this is not the fastest way to do this at all, but it will do for now
-    - using calls to Sprintf is costly, perhaps should use a StringBuilder instead
-    - instead of filtering results from extensions to extensions, we should get the
-        current file's extension & loop only once through the searchResults array
-
-    - important issue: we need to crawl all of the results, because a single page of results
-    is not enough
-*/
 
 func getDorkUrl(target string, extensions []string) string {
     var result string = fmt.Sprintf("site:%s ", target)
@@ -54,7 +44,7 @@ func runDirListing(target string, searchOpts googlesearch.SearchOptions) []googl
     term := fmt.Sprintf("site:%s intitle:index.of", target)
     results, err := googlesearch.Search(ctx, term, searchOpts)
     if err != nil {
-        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
+        fmt.Printf("[!] could not perform dir-listing dork: %s", err.Error())
         return []googlesearch.Result{}
     }
 
@@ -67,7 +57,7 @@ func runSetupFiles(target string, searchOpts googlesearch.SearchOptions) []googl
     term := fmt.Sprintf("site:%s inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config", target)
     results, err := googlesearch.Search(ctx, term, searchOpts)
     if err != nil {
-        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
+        fmt.Printf("[!] could not perform file-setup dork: %s", err.Error())
         return []googlesearch.Result{}
     }
 
@@ -80,7 +70,7 @@ func runOpenRedirects(target string, searchOpts googlesearch.SearchOptions) []go
     term := fmt.Sprintf("site:%s  inurl:redir | inurl:url | inurl:redirect | inurl:return | inurl:src=http | inurl:r=http", target)
     results, err := googlesearch.Search(ctx, term, searchOpts)
     if err != nil {
-        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
+        fmt.Printf("[!] Could not perform open-redirects dork: %s", err.Error())
         return []googlesearch.Result{}
     }
 
@@ -95,7 +85,17 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
     searchOpts := googlesearch.SearchOptions{
         UserAgent: opts.UserAgent,
         ProxyAddr: opts.Proxy,
+        // FollowLinks: true,
+        /* Waiting for https://github.com/rocketlaunchr/google-search/pull/18 to be merged */
     }
+
+
+    /*
+        Setting rate-limiter:
+        https://pkg.go.dev/golang.org/x/time/rate?utm_source=godoc#NewLimiter
+    */
+    var RateLimit = rate.NewLimiter(5, 0)
+    _ = RateLimit
 
     /* running the actual google-search */
     ctx := context.Background()
