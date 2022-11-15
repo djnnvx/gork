@@ -10,25 +10,30 @@ import (
 	"github.com/rocketlaunchr/google-search"
 )
 
-func getDorkUrl(target string, extensions []string) string {
+func getFileExtensionSearchUrl(target string, extensions []string) string {
     var result string = fmt.Sprintf("site:%s ", target)
     nbExtensions := len(extensions)
 
     for e := range(extensions) {
+
+        /* if there are no extensions left after this one, don't add OR clause */
         sprintfFormat := "ext:%s"
         if (nbExtensions != e + 1) {
-            sprintfFormat = "ext:%s OR "
+            sprintfFormat = "ext:%s | "
         }
 
+        /* append newly created dork */
         ext := fmt.Sprintf(sprintfFormat, extensions[e])
         result += ext
     }
+
     return result
 }
 
-func getResultsByFiletype(searchResults []googlesearch.Result, extension string) []googlesearch.Result {
+func filterByFiletype(searchResults []googlesearch.Result, extension string) []googlesearch.Result {
     result := []googlesearch.Result{};
 
+    /* look if the URL finishes with filetype. */
     for s := range(searchResults) {
         if (strings.HasSuffix(searchResults[s].URL, extension)) {
             result = append(result, searchResults[s])
@@ -37,58 +42,46 @@ func getResultsByFiletype(searchResults []googlesearch.Result, extension string)
     return result
 }
 
-func runDirListing(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
-
+func runDorkWrapper(term string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
     ctx := context.Background()
 
-    term := fmt.Sprintf("site:%s intitle:index.of", target)
     results, err := googlesearch.Search(ctx, term, searchOpts)
     if err != nil {
-        fmt.Printf("[!] could not perform dir-listing dork: %s", err.Error())
+        fmt.Printf("[!] could not perform dork: %s\n", err.Error())
+        fmt.Printf("\t[URL]: %s\n", term)
         return []googlesearch.Result{}
     }
 
     return results
+}
+
+func runDirListing(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+    term := fmt.Sprintf("site:%s intitle:index.of", target)
+    return runDorkWrapper(term, searchOpts)
 }
 
 func runSetupFiles(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
-    ctx := context.Background()
-
     term := fmt.Sprintf("site:%s inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config", target)
-    results, err := googlesearch.Search(ctx, term, searchOpts)
-    if err != nil {
-        fmt.Printf("[!] could not perform file-setup dork: %s", err.Error())
-        return []googlesearch.Result{}
-    }
-
-    return results
+    return runDorkWrapper(term, searchOpts)
 }
 
 func runOpenRedirects(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
-    ctx := context.Background()
-
     term := fmt.Sprintf("site:%s  inurl:redir | inurl:url | inurl:redirect | inurl:return | inurl:src=http | inurl:r=http", target)
-    results, err := googlesearch.Search(ctx, term, searchOpts)
-    if err != nil {
-        fmt.Printf("[!] Could not perform open-redirects dork: %s", err.Error())
-        return []googlesearch.Result{}
-    }
-
-    return results
+    return runDorkWrapper(term, searchOpts)
 }
 
 func RunSearch(opts *Options) map[string][]googlesearch.Result {
+
+    /* results is map where keys are extension-names (or dork-type) & values are googlesearch.Result objects */
     var results map[string][]googlesearch.Result = make(map[string][]googlesearch.Result)
 
     /* preparing google search according to user-defined settings */
-    dorkURL := getDorkUrl(opts.Target, opts.Extensions)
     searchOpts := googlesearch.SearchOptions{
         UserAgent: opts.UserAgent,
         ProxyAddr: opts.Proxy,
         // FollowLinks: true,
         /* Waiting for https://github.com/rocketlaunchr/google-search/pull/18 to be merged */
     }
-
 
     /*
         Setting rate-limiter:
@@ -97,14 +90,9 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
     var RateLimit = rate.NewLimiter(5, 0)
     _ = RateLimit
 
-    /* running the actual google-search */
-    ctx := context.Background()
-    googleResults, err := googlesearch.Search(ctx, dorkURL, searchOpts)
-
-    if (err != nil) {
-        fmt.Printf("[!] could not perform dork %s: %s", dorkURL, err.Error())
-        return results
-    }
+    /* running google dork to look for interesting files */
+    filesTerm := getFileExtensionSearchUrl(opts.Target, opts.Extensions)
+    extResults := runDorkWrapper(filesTerm, searchOpts)
 
     /*
         build a map where the results are mapped to the filetype (or extension, if you will)
@@ -113,7 +101,7 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
     */
     for e := range(opts.Extensions) {
         ext := opts.Extensions[e]
-        results[ext] = getResultsByFiletype(googleResults, ext)
+        results[ext] = filterByFiletype(extResults, ext)
     }
 
     /*

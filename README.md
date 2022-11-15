@@ -45,20 +45,20 @@ docker pull bogdzn/gork:canon
 ## usage
 
 ```bash
-gork is a CLI to perform Google dorks in order to retrieve cool files :)~
+gork is a CLI to perform Google dorks on a target domain :)~ (Example: ./gork -t nmap.org)
 
 Usage:
   gork [flags]
 
 Flags:
   -a, --append-results           append dork results to out file
-  -e, --extensions stringArray   filetype extensions (default [doc,docx,csv,pdf,txt,log,bak,json,xlsx])
+  -e, --extensions stringArray   filetype extensions (default [doc,docx,csv,pdf,txt,log,bak,json,xlsx,xml,conf,cnf,reg,inf,rdp,cfg,ora,ini,sql,mdb,dbf,bkf,bkp,old,backup,rtf,odt,ppt,sxt,pptx])
   -h, --help                     help for gork
   -o, --outfile string           directory storing dorks results (default "./gork.txt")
   -p, --proxy string             proxy URL
   -t, --target string            target site for your dorks
   -u, --user-agent string        Which user-agent gork should use (default "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36")
-  -v, --version                  version for gork
+  -v, --version
 ```
 
 > If you're using docker, don't forget to mount your current directory with `/app` in the container to access your outfile

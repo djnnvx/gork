@@ -14,3 +14,19 @@ type Options struct {
     Extensions      []string
 }
 
+/*
+    This function should be used by programs wanting to integrate gork as a module.
+    That way, only relevant values should be updated by the developer.
+*/
+func DefaultSearchOptions() Options {
+    result := Options{
+        Proxy: "",
+        UserAgent: DefaultUserAgent(),
+        Extensions: DefaultFileExtensions(),
+        Outfile: DefaultOutfile(),
+        AppendResults: false,
+        Target: "",
+    }
+
+    return result
+}
