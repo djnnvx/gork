@@ -7,11 +7,11 @@ import (
 
 func Run(opts *Options) {
     if (opts.Target == "") {
-        println("[!] Please specify target with -t")
+        println("[!] please specify target with -t")
         return
     }
 
-    println("[+] Running gork on " + opts.Target)
+    println("[+] running gork on " + opts.Target)
     dorks := RunSearch(opts)
 
     fileOpts := os.O_CREATE | os.O_TRUNC | os.O_WRONLY
@@ -27,12 +27,17 @@ func Run(opts *Options) {
 
     fs.WriteString("\t-== GORK RESULTS FOR " + opts.Target + " ==-\n\n")
     for extensions, results := range dorks {
-        fs.WriteString("\t--==== " + extensions + " ===-\n")
+        if len(results) == 0 {
+            continue
+        }
+
+        fmt.Printf("\tfound result(s) for %s\n", extensions)
+        fs.WriteString("\t    --==== " + extensions + " ===-\n")
         for idx := range results {
             fs.WriteString(results[idx].URL + " " + results[idx].Title + "\n")
         }
         fs.WriteString("\n")
     }
 
-    println("[+] done.")
+    println("[+] scan completed")
 }
