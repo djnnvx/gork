@@ -4,11 +4,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func DefaultOutfile() string {
+    return "./gork.txt"
+}
+
 func DefaultUserAgent() string {
     return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
 }
 
-func DefaultExtensions() []string {
+func DefaultFileExtensions() []string {
     return []string{
         "asp",
         "aspx",
@@ -57,17 +61,17 @@ func GetCmdParser(opts *Options) *cobra.Command {
         Version: version,
         DisableSuggestions : true,
         Short: "gork - a simple CLI to perform Google dorks",
-        Long: `gork is a CLI to perform Google dorks in order to retrieve cool files :)~`,
+        Long: `gork is a CLI to perform Google dorks on a target domain :)~ (Example: ./gork -t nmap.org)`,
         Run: func(cmd *cobra.Command, args []string) {
             Run(opts)
         },
     }
 
     rootCmd.PersistentFlags().StringVarP(&opts.Target, "target", "t", "", "target site for your dorks")
-    rootCmd.PersistentFlags().StringVarP(&opts.Outfile, "outfile", "o", "./gork.txt", "directory storing dorks results")
+    rootCmd.PersistentFlags().StringVarP(&opts.Outfile, "outfile", "o", DefaultOutfile(), "directory storing dorks results")
     rootCmd.PersistentFlags().StringVarP(&opts.Proxy, "proxy", "p", "", "proxy URL")
     rootCmd.PersistentFlags().StringVarP(&opts.UserAgent, "user-agent", "u", DefaultUserAgent(), "Which user-agent gork should use")
-    rootCmd.PersistentFlags().StringArrayVarP(&opts.Extensions, "extensions", "e", DefaultExtensions(), "filetype extensions")
+    rootCmd.PersistentFlags().StringArrayVarP(&opts.Extensions, "extensions", "e", DefaultFileExtensions(), "filetype extensions")
     rootCmd.PersistentFlags().BoolVarP(&opts.AppendResults, "append-results", "a", false, "append dork results to out file")
 
     return rootCmd

@@ -137,7 +137,7 @@ func getUrlStart(uri string) int {
 }
 
 func buildUrl(term string, start int) string {
-    const baseURL = "https://www.google.com?q="
+    const baseURL = "https://www.google.com/search?q="
 
     term = strings.Trim(term, " ")
 	term = strings.Replace(term, " ", "+", -1)
