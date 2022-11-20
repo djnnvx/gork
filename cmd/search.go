@@ -5,59 +5,60 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/rocketlaunchr/google-search"
+	runner "github.com/bogdzn/gork/runner"
 )
 
 
-func runDirListing(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+func runDirListing(target string, searchOpts runner.SearchOptions) []runner.Result {
 
     ctx := context.Background()
 
     term := fmt.Sprintf("site:%s intitle:index.of", target)
-    results, err := googlesearch.Search(ctx, term, searchOpts)
+    results, err := runner.Search(ctx, term, searchOpts)
     if err != nil {
-        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
-        return []googlesearch.Result{}
+        fmt.Printf("[!] Could not perform Dir Listing dork: %s\n", err.Error())
+        return []runner.Result{}
     }
 
     return results
 }
 
-func runSetupFiles(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+func runSetupFiles(target string, searchOpts runner.SearchOptions) []runner.Result {
     ctx := context.Background()
 
     term := fmt.Sprintf("site:%s inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config", target)
-    results, err := googlesearch.Search(ctx, term, searchOpts)
+    results, err := runner.Search(ctx, term, searchOpts)
     if err != nil {
-        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
-        return []googlesearch.Result{}
+        fmt.Printf("[!] Could not perform SetupFiles dork: %s\n", err.Error())
+        return []runner.Result{}
     }
 
     return results
 }
 
-func runOpenRedirects(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+func runOpenRedirects(target string, searchOpts runner.SearchOptions) []runner.Result {
     ctx := context.Background()
 
     term := fmt.Sprintf("site:%s  inurl:redir | inurl:url | inurl:redirect | inurl:return | inurl:src=http | inurl:r=http", target)
-    results, err := googlesearch.Search(ctx, term, searchOpts)
+    results, err := runner.Search(ctx, term, searchOpts)
     if err != nil {
-        fmt.Printf("[!] Could not perform Dir Listing dork: %s", err.Error())
-        return []googlesearch.Result{}
+        fmt.Printf("[!] Could not perform OpenRedirects dork: %s\n", err.Error())
+        return []runner.Result{}
     }
 
     return results
 }
 
-func RunSearch(opts *Options) map[string][]googlesearch.Result {
+func RunSearch(opts *Options) map[string][]runner.Result {
     var wg sync.WaitGroup
-    searchOpts := googlesearch.SearchOptions{
+    searchOpts := runner.SearchOptions{
         UserAgent: opts.UserAgent,
         ProxyAddr: opts.Proxy,
+        FollowLinks: true,
     }
 
     ctx := context.Background()
-    var results map[string][]googlesearch.Result = make(map[string][]googlesearch.Result)
+    var results map[string][]runner.Result = make(map[string][]runner.Result)
 
     for ext := range opts.Extensions {
         extension := opts.Extensions[ext]
@@ -74,10 +75,10 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
             defer wg.Done()
 
             term := fmt.Sprintf("site:%s ext:%s", opts.Target, extension)
-            r, err := googlesearch.Search(ctx, term, searchOpts)
+            r, err := runner.Search(ctx, term, searchOpts)
 
             if (err != nil) {
-                fmt.Printf("[!] could not perform dork %s: %s", term, err.Error())
+                fmt.Printf("[!] could not perform dork %s: %s\n", term, err.Error())
                 return
             }
 
