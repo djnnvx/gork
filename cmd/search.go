@@ -5,9 +5,7 @@ import (
     "strings"
     "context"
 
-    "golang.org/x/time/rate"
-
-	"github.com/rocketlaunchr/google-search"
+	runner "github.com/bogdzn/gork/runner"
 )
 
 func getFileExtensionSearchUrl(target string, extensions []string) string {
@@ -30,8 +28,8 @@ func getFileExtensionSearchUrl(target string, extensions []string) string {
     return result
 }
 
-func filterByFiletype(searchResults []googlesearch.Result, extension string) []googlesearch.Result {
-    result := []googlesearch.Result{};
+func filterByFiletype(searchResults []runner.Result, extension string) []runner.Result {
+    result := []runner.Result{};
 
     /* look if the URL finishes with filetype. */
     for s := range(searchResults) {
@@ -42,53 +40,42 @@ func filterByFiletype(searchResults []googlesearch.Result, extension string) []g
     return result
 }
 
-func runDorkWrapper(term string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+func runDorkWrapper(term string, searchOpts runner.SearchOptions) []runner.Result {
     ctx := context.Background()
 
-    results, err := googlesearch.Search(ctx, term, searchOpts)
+    results, err := runner.Search(ctx, term, searchOpts)
     if err != nil {
         fmt.Printf("[!] could not perform dork: %s\n", err.Error())
         fmt.Printf("\t[URL]: %s\n", term)
-        return []googlesearch.Result{}
+        return []runner.Result{}
     }
 
     return results
 }
 
-func runDirListing(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+func runDirListing(target string, searchOpts runner.SearchOptions) []runner.Result {
     term := fmt.Sprintf("site:%s intitle:index.of", target)
     return runDorkWrapper(term, searchOpts)
 }
 
-func runSetupFiles(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+func runSetupFiles(target string, searchOpts runner.SearchOptions) []runner.Result {
     term := fmt.Sprintf("site:%s inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config", target)
     return runDorkWrapper(term, searchOpts)
 }
 
-func runOpenRedirects(target string, searchOpts googlesearch.SearchOptions) []googlesearch.Result {
+func runOpenRedirects(target string, searchOpts runner.SearchOptions) []runner.Result {
     term := fmt.Sprintf("site:%s  inurl:redir | inurl:url | inurl:redirect | inurl:return | inurl:src=http | inurl:r=http", target)
     return runDorkWrapper(term, searchOpts)
 }
 
-func RunSearch(opts *Options) map[string][]googlesearch.Result {
-
-    /* results is map where keys are extension-names (or dork-type) & values are googlesearch.Result objects */
-    var results map[string][]googlesearch.Result = make(map[string][]googlesearch.Result)
-
-    /* preparing google search according to user-defined settings */
-    searchOpts := googlesearch.SearchOptions{
+func RunSearch(opts *Options) map[string][]runner.Result {
+    searchOpts := runner.SearchOptions{
         UserAgent: opts.UserAgent,
         ProxyAddr: opts.Proxy,
-        // FollowLinks: true,
-        /* Waiting for https://github.com/rocketlaunchr/google-search/pull/18 to be merged */
+        FollowLinks: true,
     }
 
-    /*
-        Setting rate-limiter:
-        https://pkg.go.dev/golang.org/x/time/rate?utm_source=godoc#NewLimiter
-    */
-    var RateLimit = rate.NewLimiter(5, 0)
-    _ = RateLimit
+    var results map[string][]runner.Result = make(map[string][]runner.Result)
 
     /* running google dork to look for interesting files */
     filesTerm := getFileExtensionSearchUrl(opts.Target, opts.Extensions)
@@ -103,6 +90,7 @@ func RunSearch(opts *Options) map[string][]googlesearch.Result {
         ext := opts.Extensions[e]
         results[ext] = filterByFiletype(extResults, ext)
     }
+
 
     /*
         these must be done separately, because they have nothing to do with looking for files,
