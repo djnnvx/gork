@@ -12,6 +12,7 @@ type Options struct {
     /* Target settings */
     Target          string
     Extensions      []string
+    Exclusions      []string
 }
 
 /*
@@ -23,6 +24,7 @@ func DefaultSearchOptions() Options {
         Proxy: "",
         UserAgent: DefaultUserAgent(),
         Extensions: DefaultFileExtensions(),
+        Exclusions: DefaultExclusions(),
         Outfile: DefaultOutfile(),
         AppendResults: false,
         Target: "",

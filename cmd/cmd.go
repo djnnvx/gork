@@ -12,6 +12,12 @@ func DefaultUserAgent() string {
     return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
 }
 
+func DefaultExclusions() []string {
+    return []string{
+        "html",
+    }
+}
+
 func DefaultFileExtensions() []string {
     return []string{
         "asp",
@@ -55,7 +61,7 @@ func DefaultFileExtensions() []string {
 }
 
 func GetCmdParser(opts *Options) *cobra.Command {
-    var version = "0.0.4";
+    var version = "0.0.5";
     var rootCmd = &cobra.Command{
         Use:   "gork",
         Version: version,
@@ -72,7 +78,7 @@ func GetCmdParser(opts *Options) *cobra.Command {
     rootCmd.PersistentFlags().StringVarP(&opts.Proxy, "proxy", "p", "", "proxy URL")
     rootCmd.PersistentFlags().StringVarP(&opts.UserAgent, "user-agent", "u", DefaultUserAgent(), "Which user-agent gork should use")
     rootCmd.PersistentFlags().StringArrayVarP(&opts.Extensions, "extensions", "e", DefaultFileExtensions(), "filetype extensions")
+    rootCmd.PersistentFlags().StringArrayVarP(&opts.Exclusions, "exclude", "x", DefaultExclusions(), "exclude specific filetype")
     rootCmd.PersistentFlags().BoolVarP(&opts.AppendResults, "append-results", "a", false, "append dork results to out file")
-
     return rootCmd
 }

@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/proxy"
@@ -20,7 +21,7 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 		ctx = context.Background()
 	}
 
-    rateLimit := rate.NewLimiter(rate.Inf, 0)
+    rateLimit := rate.NewLimiter(rate.Every(1 * time.Second), 5)
 	if err := rateLimit.Wait(ctx); err != nil {
 		return nil, err
 	}
@@ -36,6 +37,12 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 		2,
 		&queue.InMemoryQueueStorage{MaxSize: 10000},
 	)
+
+    c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 2,
+		Delay:      1 * time.Second,
+	})
 
 	results := []Result{}
 	nextPageLink := ""
@@ -96,7 +103,6 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 
 		sel := e.DOM
 
-		/* check if there is a next button at the end. */
 		nextPageHref, exists := sel.Attr("href")
 		if exists == true {
 			start := getUrlStart(strings.TrimSpace(nextPageHref))
