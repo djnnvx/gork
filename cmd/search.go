@@ -1,9 +1,9 @@
 package gork
 
 import (
+	"context"
 	"fmt"
-    "strings"
-    "context"
+	"strings"
 
 	runner "github.com/bogdzn/gork/runner"
 )
@@ -40,7 +40,29 @@ func filterByFiletype(searchResults []runner.Result, extension string) []runner.
     return result
 }
 
-func runDorkWrapper(term string, searchOpts runner.SearchOptions) []runner.Result {
+func filterByExtension(results []runner.Result, filters []string) []runner.Result {
+    filtered := []runner.Result{}
+    var filterFlag = false
+
+    for _, r := range(results) {
+        for _, f := range(filters) {
+            if strings.HasSuffix(r.URL, f) {
+                filterFlag = true
+                break
+            }
+        }
+
+        if !filterFlag {
+            filtered = append(filtered, r)
+        }
+        filterFlag = false
+
+    }
+
+    return filtered
+}
+
+func runDorkWrapper(term string, searchOpts runner.SearchOptions, filters []string) []runner.Result {
     ctx := context.Background()
 
     results, err := runner.Search(ctx, term, searchOpts)
@@ -50,22 +72,22 @@ func runDorkWrapper(term string, searchOpts runner.SearchOptions) []runner.Resul
         return []runner.Result{}
     }
 
-    return results
+    return filterByExtension(results, filters)
 }
 
-func runDirListing(target string, searchOpts runner.SearchOptions) []runner.Result {
+func runDirListing(target string, searchOpts runner.SearchOptions, excl []string) []runner.Result {
     term := fmt.Sprintf("site:%s intitle:index.of", target)
-    return runDorkWrapper(term, searchOpts)
+    return runDorkWrapper(term, searchOpts, excl)
 }
 
-func runSetupFiles(target string, searchOpts runner.SearchOptions) []runner.Result {
+func runSetupFiles(target string, searchOpts runner.SearchOptions, excl []string) []runner.Result {
     term := fmt.Sprintf("site:%s inurl:readme | inurl:license | inurl:install | inurl:setup | inurl:config", target)
-    return runDorkWrapper(term, searchOpts)
+    return runDorkWrapper(term, searchOpts, excl)
 }
 
-func runOpenRedirects(target string, searchOpts runner.SearchOptions) []runner.Result {
+func runOpenRedirects(target string, searchOpts runner.SearchOptions, excl []string) []runner.Result {
     term := fmt.Sprintf("site:%s  inurl:redir | inurl:url | inurl:redirect | inurl:return | inurl:src=http | inurl:r=http", target)
-    return runDorkWrapper(term, searchOpts)
+    return runDorkWrapper(term, searchOpts, excl)
 }
 
 func RunSearch(opts *Options) map[string][]runner.Result {
@@ -79,7 +101,7 @@ func RunSearch(opts *Options) map[string][]runner.Result {
 
     /* running google dork to look for interesting files */
     filesTerm := getFileExtensionSearchUrl(opts.Target, opts.Extensions)
-    extResults := runDorkWrapper(filesTerm, searchOpts)
+    extResults := runDorkWrapper(filesTerm, searchOpts, opts.Exclusions)
 
     /*
         build a map where the results are mapped to the filetype (or extension, if you will)
@@ -91,14 +113,13 @@ func RunSearch(opts *Options) map[string][]runner.Result {
         results[ext] = filterByFiletype(extResults, ext)
     }
 
-
     /*
         these must be done separately, because they have nothing to do with looking for files,
         they're more like, looking for links...
     */
-    results["dir listing"] = runDirListing(opts.Target, searchOpts)
-    results["project setup files"] = runSetupFiles(opts.Target, searchOpts)
-    results["open redirects"] = runOpenRedirects(opts.Target, searchOpts)
+    results["dir listing"] = runDirListing(opts.Target, searchOpts, opts.Exclusions)
+    results["project setup files"] = runSetupFiles(opts.Target, searchOpts, opts.Exclusions)
+    results["open redirects"] = runOpenRedirects(opts.Target, searchOpts, opts.Exclusions)
 
     return results
 }
