@@ -99,7 +99,6 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 		nextPageLink = strings.TrimSpace(nextPageHref)
 	})
 
-    /*
 	c.OnHTML("div.g", func(e *colly.HTMLElement) {
 
 		sel := e.DOM
@@ -112,7 +111,7 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 		} else {
 			nextPageLink = ""
 		}
-	}) */
+	})
 
 	url := buildUrl(searchTerm, 0)
 
